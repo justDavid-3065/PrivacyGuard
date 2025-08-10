@@ -1,7 +1,90 @@
 import https from 'https';
 import { storage } from '../storage';
+import { emailService } from "./emailService";
+import { Socket } from 'net';
 
-export class SSLMonitor {
+interface CertificateInfo {
+  issuer: string;
+  subject: string;
+  validFrom: Date;
+  validTo: Date;
+  isValid: boolean;
+}
+
+class SSLMonitor {
+  async checkCertificate(domain: string): Promise<CertificateInfo | null> {
+    return new Promise((resolve) => {
+      const options = {
+        host: domain,
+        port: 443,
+        method: 'GET',
+        timeout: 10000,
+      };
+
+      const req = https.request(options, (res) => {
+        const cert = res.socket.getPeerCertificate();
+
+        if (cert && Object.keys(cert).length > 0) {
+          const certInfo: CertificateInfo = {
+            issuer: cert.issuer?.CN || cert.issuer?.O || 'Unknown',
+            subject: cert.subject?.CN || domain,
+            validFrom: new Date(cert.valid_from),
+            validTo: new Date(cert.valid_to),
+            isValid: new Date() < new Date(cert.valid_to) && new Date() > new Date(cert.valid_from)
+          };
+          resolve(certInfo);
+        } else {
+          resolve(null);
+        }
+      });
+
+      req.on('error', () => {
+        resolve(null);
+      });
+
+      req.on('timeout', () => {
+        req.destroy();
+        resolve(null);
+      });
+
+      req.end();
+    });
+  }
+
+  async updateCertificateInfo(domainId: string, domainName: string): Promise<void> {
+    try {
+      const certInfo = await this.checkCertificate(domainName);
+
+      if (certInfo) {
+        await storage.createSslCertificate({
+          domainId,
+          issuer: certInfo.issuer,
+          subject: certInfo.subject,
+          validFrom: certInfo.validFrom,
+          validTo: certInfo.validTo,
+          isValid: certInfo.isValid,
+          lastChecked: new Date()
+        });
+      } else {
+        await storage.createSslCertificate({
+          domainId,
+          isValid: false,
+          lastChecked: new Date(),
+          error: 'Failed to retrieve certificate information'
+        });
+      }
+    } catch (error) {
+      console.error(`Error checking SSL certificate for ${domainName}:`, error);
+
+      await storage.createSslCertificate({
+        domainId,
+        isValid: false,
+        lastChecked: new Date(),
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
   async checkDomain(domainName: string, domainId: string): Promise<void> {
     try {
       const options = {
@@ -13,7 +96,7 @@ export class SSLMonitor {
       };
 
       const certificate = await this.getCertificateInfo(options);
-      
+
       if (certificate) {
         await storage.createSslCertificate({
           domainId,
@@ -27,7 +110,7 @@ export class SSLMonitor {
       }
     } catch (error) {
       console.error(`SSL check failed for ${domainName}:`, error);
-      
+
       // Store error information
       await storage.createSslCertificate({
         domainId,
@@ -52,7 +135,7 @@ export class SSLMonitor {
     return new Promise((resolve) => {
       const req = https.request(options, (res) => {
         const cert = (res.socket as any).getPeerCertificate();
-        
+
         if (!cert || Object.keys(cert).length === 0) {
           resolve({
             issuer: null,
@@ -113,7 +196,7 @@ export class SSLMonitor {
     try {
       // Get all active domains from all users
       const domains = await storage.getDomains(''); // This would need to be modified to get all domains
-      
+
       for (const domain of domains) {
         await this.checkDomain(domain.name, domain.id);
         // Add delay to avoid overwhelming servers

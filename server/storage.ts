@@ -35,54 +35,54 @@ export interface IStorage {
   // User operations (required for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
-  
+
   // Data inventory operations
   createDataType(dataType: InsertDataType): Promise<DataType>;
   getDataTypes(userId: string): Promise<DataType[]>;
   updateDataType(id: string, dataType: Partial<InsertDataType>): Promise<DataType>;
   deleteDataType(id: string): Promise<void>;
-  
+
   // Consent tracking operations
   createConsentRecord(consent: InsertConsentRecord): Promise<ConsentRecord>;
   getConsentRecords(userId: string): Promise<ConsentRecord[]>;
   getConsentBySubject(subjectEmail: string, userId: string): Promise<ConsentRecord[]>;
-  
+
   // DSAR operations
   createDsarRequest(request: InsertDsarRequest): Promise<DsarRequest>;
   getDsarRequests(userId: string): Promise<DsarRequest[]>;
   updateDsarRequest(id: string, updates: Partial<InsertDsarRequest>): Promise<DsarRequest>;
   getDsarRequestById(id: string): Promise<DsarRequest | undefined>;
-  
+
   // Privacy notice operations
   createPrivacyNotice(notice: InsertPrivacyNotice): Promise<PrivacyNotice>;
   getPrivacyNotices(userId: string): Promise<PrivacyNotice[]>;
   updatePrivacyNotice(id: string, updates: Partial<InsertPrivacyNotice>): Promise<PrivacyNotice>;
   deletePrivacyNotice(id: string): Promise<void>;
-  
+
   // Incident operations
   createIncident(incident: InsertIncident): Promise<Incident>;
   getIncidents(userId: string): Promise<Incident[]>;
   updateIncident(id: string, updates: Partial<InsertIncident>): Promise<Incident>;
   getIncidentById(id: string): Promise<Incident | undefined>;
-  
+
   // Domain operations
   createDomain(domain: InsertDomain): Promise<Domain>;
   getDomains(userId: string): Promise<Domain[]>;
   updateDomain(id: string, updates: Partial<InsertDomain>): Promise<Domain>;
   deleteDomain(id: string): Promise<void>;
   getDomainById(id: string): Promise<Domain | undefined>;
-  
+
   // SSL Certificate operations
   createSslCertificate(cert: InsertSslCertificate): Promise<SslCertificate>;
   getSslCertificatesByDomain(domainId: string): Promise<SslCertificate[]>;
   getExpiringCertificates(days: number): Promise<(SslCertificate & { domain: Domain })[]>;
   updateSslCertificate(id: string, updates: Partial<InsertSslCertificate>): Promise<SslCertificate>;
   getAllDomainsWithCertificates(userId: string): Promise<(Domain & { sslCertificates: SslCertificate[] })[]>;
-  
+
   // Alert settings operations
   getAlertSettings(userId: string): Promise<AlertSettings | undefined>;
   upsertAlertSettings(settings: InsertAlertSettings): Promise<AlertSettings>;
-  
+
   // Dashboard statistics
   getDashboardStats(userId: string): Promise<{
     totalDataTypes: number;
@@ -198,7 +198,7 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return result;
   }
-
+  
   async deletePrivacyNotice(id: string): Promise<void> {
     await db.delete(privacyNotices).where(eq(privacyNotices.id, id));
   }
@@ -294,12 +294,12 @@ export class DatabaseStorage implements IStorage {
   async getAllDomainsWithCertificates(userId: string): Promise<(Domain & { sslCertificates: SslCertificate[] })[]> {
     const domainsResult = await db.select().from(domains).where(eq(domains.userId, userId));
     const result = [];
-    
+
     for (const domain of domainsResult) {
       const certs = await this.getSslCertificatesByDomain(domain.id);
       result.push({ ...domain, sslCertificates: certs });
     }
-    
+
     return result;
   }
 
