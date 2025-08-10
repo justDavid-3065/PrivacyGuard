@@ -30,13 +30,13 @@ class PrivacyNoticeGenerator {
       sections: [
         {
           title: 'Data Controller Information',
-          content: `${'{company_name}'} ("we", "us", or "our") is the data controller responsible for your personal data. You can contact us at ${'{contact_email}'} or ${'{company_address}'}.`,
+          content: '{company_name} ("we", "us", or "our") is the data controller responsible for your personal data. You can contact us at {contact_email} or {company_address}.',
           required: true,
           variables: ['company_name', 'contact_email', 'company_address']
         },
         {
           title: 'Data Protection Officer',
-          content: 'Our Data Protection Officer can be reached at ${'{dpo_email}'}.',
+          content: 'Our Data Protection Officer can be reached at {dpo_email}.',
           required: false,
           variables: ['dpo_email']
         },
@@ -48,7 +48,7 @@ class PrivacyNoticeGenerator {
         },
         {
           title: 'Your Rights',
-          content: 'Under GDPR, you have the following rights:\n\n• Right of access (Article 15)\n• Right to rectification (Article 16)\n• Right to erasure (Article 17)\n• Right to restrict processing (Article 18)\n• Right to data portability (Article 20)\n• Right to object (Article 21)\n• Right to withdraw consent\n\nTo exercise these rights, contact us at ${'{contact_email}'}.',
+          content: 'Under GDPR, you have the following rights:\n\n• Right of access (Article 15)\n• Right to rectification (Article 16)\n• Right to erasure (Article 17)\n• Right to restrict processing (Article 18)\n• Right to data portability (Article 20)\n• Right to object (Article 21)\n• Right to withdraw consent\n\nTo exercise these rights, contact us at {contact_email}.',
           required: true,
           variables: ['contact_email']
         }
@@ -67,7 +67,7 @@ class PrivacyNoticeGenerator {
         },
         {
           title: 'Your California Privacy Rights',
-          content: 'As a California resident, you have the right to:\n\n• Request disclosure of personal information collected\n• Request deletion of personal information\n• Opt-out of the sale of personal information\n• Non-discrimination for exercising privacy rights\n\nTo exercise these rights, contact us at ${'{contact_email}'} or visit ${'{website_url}/privacy-request'}.',
+          content: 'As a California resident, you have the right to:\n\n• Request disclosure of personal information collected\n• Request deletion of personal information\n• Opt-out of the sale of personal information\n• Non-discrimination for exercising privacy rights\n\nTo exercise these rights, contact us at {contact_email} or visit {website_url}/privacy-request.',
           required: true,
           variables: ['contact_email', 'website_url']
         },
