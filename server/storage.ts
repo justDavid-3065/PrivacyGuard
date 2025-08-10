@@ -355,16 +355,29 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Accessibility scanning methods
-  async createAccessibilityScan(scan: any) {
-    // Implementation would depend on your accessibility_scans table structure
-    console.log('Creating accessibility scan:', scan);
-    return scan;
+  async createAccessibilityScan(scan: {
+    userId: string;
+    url: string;
+    score: number;
+    issues: string;
+    suggestions: string;
+    scannedAt: Date;
+  }) {
+    const [result] = await db.execute(sql`
+      INSERT INTO accessibility_scans (user_id, url, score, issues, suggestions, scanned_at)
+      VALUES (${scan.userId}, ${scan.url}, ${scan.score}, ${scan.issues}, ${scan.suggestions}, ${scan.scannedAt})
+      RETURNING *
+    `);
+    return result;
   }
 
   async getAccessibilityScans(userId: string) {
-    // Implementation would depend on your accessibility_scans table structure
-    console.log('Getting accessibility scans for user:', userId);
-    return [];
+    const result = await db.execute(sql`
+      SELECT * FROM accessibility_scans 
+      WHERE user_id = ${userId} 
+      ORDER BY scanned_at DESC
+    `);
+    return result.rows || [];
   }
 
   // Subscription methods
@@ -406,13 +419,53 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Audit methods
-  async createAuditEvent(event: any) {
-    console.log('Creating audit event:', event);
+  async createAuditEvent(event: {
+    id: string;
+    userId: string;
+    action: string;
+    resource: string;
+    resourceId?: string;
+    details: Record<string, any>;
+    userAgent?: string;
+    ipAddress?: string;
+    timestamp: Date;
+    severity: string;
+  }) {
+    await db.execute(sql`
+      INSERT INTO audit_events (id, user_id, action, resource, resource_id, details, user_agent, ip_address, severity, timestamp)
+      VALUES (${event.id}, ${event.userId}, ${event.action}, ${event.resource}, ${event.resourceId}, ${JSON.stringify(event.details)}, ${event.userAgent}, ${event.ipAddress}, ${event.severity}, ${event.timestamp})
+    `);
   }
 
-  async getAuditEvents(userId: string, filters?: any) {
-    console.log('Getting audit events:', userId, filters);
-    return [];
+  async getAuditEvents(userId: string, filters?: {
+    action?: string;
+    resource?: string;
+    startDate?: Date;
+    endDate?: Date;
+    severity?: string;
+  }) {
+    let query = sql`SELECT * FROM audit_events WHERE user_id = ${userId}`;
+    
+    if (filters?.action) {
+      query = sql`${query} AND action = ${filters.action}`;
+    }
+    if (filters?.resource) {
+      query = sql`${query} AND resource = ${filters.resource}`;
+    }
+    if (filters?.startDate) {
+      query = sql`${query} AND timestamp >= ${filters.startDate}`;
+    }
+    if (filters?.endDate) {
+      query = sql`${query} AND timestamp <= ${filters.endDate}`;
+    }
+    if (filters?.severity) {
+      query = sql`${query} AND severity = ${filters.severity}`;
+    }
+    
+    query = sql`${query} ORDER BY timestamp DESC`;
+    
+    const result = await db.execute(query);
+    return result.rows || [];
   }
 
   // Integration methods

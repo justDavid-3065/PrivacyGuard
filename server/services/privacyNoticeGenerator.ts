@@ -1,4 +1,3 @@
-
 interface PrivacyNoticeTemplate {
   id: string;
   name: string;
@@ -37,7 +36,7 @@ class PrivacyNoticeGenerator {
         },
         {
           title: 'Data Protection Officer',
-          content: `Our Data Protection Officer can be reached at ${'{dpo_email}'}.`,
+          content: 'Our Data Protection Officer can be reached at ${'{dpo_email}'}.',
           required: false,
           variables: ['dpo_email']
         },
@@ -57,7 +56,7 @@ class PrivacyNoticeGenerator {
     },
     {
       id: 'ccpa-standard',
-      name: 'CCPA Standard Template', 
+      name: 'CCPA Standard Template',
       jurisdiction: 'CCPA',
       sections: [
         {
@@ -93,12 +92,12 @@ class PrivacyNoticeGenerator {
 
     // Process template sections
     const allSections = [...template.sections, ...(customSections || [])];
-    
+
     allSections.forEach(section => {
       notice += `## ${section.title}\n\n`;
-      
+
       let content = section.content;
-      
+
       // Replace variables
       content = content.replace(/{company_name}/g, companyInfo.name);
       content = content.replace(/{contact_email}/g, companyInfo.email);
@@ -106,7 +105,7 @@ class PrivacyNoticeGenerator {
       content = content.replace(/{dpo_email}/g, companyInfo.dpoEmail || companyInfo.email);
       content = content.replace(/{website_url}/g, companyInfo.website);
       content = content.replace(/{phone}/g, companyInfo.phone || 'N/A');
-      
+
       notice += `${content}\n\n`;
     });
 
