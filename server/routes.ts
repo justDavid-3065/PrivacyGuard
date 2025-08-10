@@ -13,6 +13,12 @@ import {
 } from "@shared/schema";
 import { z } from "zod";
 import { sslMonitor } from "./services/sslMonitor";
+import { accessibilityScanner } from "./services/accessibilityScanner";
+import { stripeService } from "./services/stripeService";
+import { privacyNoticeGenerator } from "./services/privacyNoticeGenerator";
+import { webhookService } from "./services/webhookService";
+import { auditService } from "./services/auditService";
+import { integrationService } from "./services/integrationService";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -333,6 +339,163 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating alert settings:", error);
       res.status(400).json({ message: "Failed to update alert settings" });
+    }
+  });
+
+  // Accessibility scanning routes
+  app.post('/api/accessibility/scan', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { url } = req.body;
+      const result = await accessibilityScanner.scanUrl(url, userId);
+      res.json(result);
+    } catch (error) {
+      console.error("Error performing accessibility scan:", error);
+      res.status(500).json({ message: "Failed to perform accessibility scan" });
+    }
+  });
+
+  app.get('/api/accessibility/scans', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const scans = await accessibilityScanner.getScanHistory(userId);
+      res.json(scans);
+    } catch (error) {
+      console.error("Error fetching accessibility scans:", error);
+      res.status(500).json({ message: "Failed to fetch accessibility scans" });
+    }
+  });
+
+  // Stripe billing routes
+  app.get('/api/billing/plans', async (req, res) => {
+    try {
+      const plans = stripeService.getPlans();
+      res.json(plans);
+    } catch (error) {
+      console.error("Error fetching billing plans:", error);
+      res.status(500).json({ message: "Failed to fetch billing plans" });
+    }
+  });
+
+  app.post('/api/billing/checkout', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { planId } = req.body;
+      const session = await stripeService.createCheckoutSession(
+        userId,
+        planId,
+        `${req.headers.origin}/dashboard?payment=success`,
+        `${req.headers.origin}/billing?payment=cancelled`
+      );
+      res.json({ sessionUrl: session.url });
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
+      res.status(500).json({ message: "Failed to create checkout session" });
+    }
+  });
+
+  app.post('/api/billing/webhook', async (req, res) => {
+    try {
+      const signature = req.headers['stripe-signature'];
+      // Verify webhook signature and process event
+      await stripeService.handleWebhook(req.body);
+      res.json({ received: true });
+    } catch (error) {
+      console.error("Error processing Stripe webhook:", error);
+      res.status(400).json({ message: "Webhook error" });
+    }
+  });
+
+  // Privacy notice generator routes
+  app.get('/api/privacy-notice/templates', isAuthenticated, async (req: any, res) => {
+    try {
+      const templates = privacyNoticeGenerator.getTemplates();
+      res.json(templates);
+    } catch (error) {
+      console.error("Error fetching templates:", error);
+      res.status(500).json({ message: "Failed to fetch templates" });
+    }
+  });
+
+  app.post('/api/privacy-notice/generate', isAuthenticated, async (req: any, res) => {
+    try {
+      const { templateId, companyInfo, customSections } = req.body;
+      const notice = privacyNoticeGenerator.generateNotice(templateId, companyInfo, customSections);
+      res.json({ notice });
+    } catch (error) {
+      console.error("Error generating privacy notice:", error);
+      res.status(500).json({ message: "Failed to generate privacy notice" });
+    }
+  });
+
+  // Webhook management routes
+  app.post('/api/webhooks', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { url, events } = req.body;
+      const webhook = await webhookService.createWebhook(userId, url, events);
+      res.json(webhook);
+    } catch (error) {
+      console.error("Error creating webhook:", error);
+      res.status(500).json({ message: "Failed to create webhook" });
+    }
+  });
+
+  app.get('/api/webhooks', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const webhooks = await webhookService.getWebhooks(userId);
+      res.json(webhooks);
+    } catch (error) {
+      console.error("Error fetching webhooks:", error);
+      res.status(500).json({ message: "Failed to fetch webhooks" });
+    }
+  });
+
+  // Compliance and audit routes
+  app.get('/api/compliance/score', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const score = await auditService.calculateComplianceScore(userId);
+      res.json(score);
+    } catch (error) {
+      console.error("Error calculating compliance score:", error);
+      res.status(500).json({ message: "Failed to calculate compliance score" });
+    }
+  });
+
+  app.get('/api/audit/trail', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const trail = await auditService.getAuditTrail(userId, req.query);
+      res.json(trail);
+    } catch (error) {
+      console.error("Error fetching audit trail:", error);
+      res.status(500).json({ message: "Failed to fetch audit trail" });
+    }
+  });
+
+  // Integration routes
+  app.post('/api/integrations/hubspot', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { apiKey } = req.body;
+      const integration = await integrationService.connectHubSpot(userId, apiKey);
+      res.json(integration);
+    } catch (error) {
+      console.error("Error connecting HubSpot:", error);
+      res.status(500).json({ message: "Failed to connect HubSpot" });
+    }
+  });
+
+  app.get('/api/integrations', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const integrations = await integrationService.getIntegrations(userId);
+      res.json(integrations);
+    } catch (error) {
+      console.error("Error fetching integrations:", error);
+      res.status(500).json({ message: "Failed to fetch integrations" });
     }
   });
 

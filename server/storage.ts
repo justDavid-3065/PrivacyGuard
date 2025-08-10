@@ -83,6 +83,34 @@ export interface IStorage {
   getAlertSettings(userId: string): Promise<AlertSettings | undefined>;
   upsertAlertSettings(settings: InsertAlertSettings): Promise<AlertSettings>;
 
+  // Accessibility scanning methods
+  createAccessibilityScan(scan: any): Promise<any>;
+  getAccessibilityScans(userId: string): Promise<any[]>;
+
+  // Subscription methods
+  createSubscription(subscription: any): Promise<any>;
+  updateSubscriptionPayment(subscriptionId: string, paid: boolean): Promise<void>;
+  updateSubscriptionStatus(subscriptionId: string, status: string): Promise<void>;
+
+  // Webhook methods
+  createWebhook(webhook: any): Promise<any>;
+  getWebhooks(userId: string): Promise<any[]>;
+  getActiveWebhooks(userId: string, eventType: string): Promise<any[]>;
+  deleteWebhook(webhookId: string, userId: string): Promise<void>;
+  logWebhookDelivery(delivery: any): Promise<void>;
+
+  // Audit methods
+  createAuditEvent(event: any): Promise<void>;
+  getAuditEvents(userId: string, filters?: any): Promise<any[]>;
+
+  // Integration methods
+  createIntegration(userId: string, integration: any): Promise<any>;
+  getIntegration(integrationId: string): Promise<any | null>;
+  getIntegrations(userId: string): Promise<any[]>;
+  updateIntegrationSync(integrationId: string, lastSync: Date): Promise<void>;
+  updateIntegrationStatus(integrationId: string, status: string): Promise<void>;
+  deleteIntegration(integrationId: string, userId: string): Promise<void>;
+
   // Dashboard statistics
   getDashboardStats(userId: string): Promise<{
     totalDataTypes: number;
@@ -198,7 +226,7 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return result;
   }
-  
+
   async deletePrivacyNotice(id: string): Promise<void> {
     await db.delete(privacyNotices).where(eq(privacyNotices.id, id));
   }
@@ -316,12 +344,102 @@ export class DatabaseStorage implements IStorage {
       .onConflictDoUpdate({
         target: alertSettings.userId,
         set: {
-          ...settings,
+          emailNotifications: settings.emailNotifications,
+          sslExpiryDays: settings.sslExpiryDays,
+          incidentSeverity: settings.incidentSeverity,
           updatedAt: new Date(),
         },
       })
       .returning();
-    return result;
+    return result[0];
+  }
+
+  // Accessibility scanning methods
+  async createAccessibilityScan(scan: any) {
+    // Implementation would depend on your accessibility_scans table structure
+    console.log('Creating accessibility scan:', scan);
+    return scan;
+  }
+
+  async getAccessibilityScans(userId: string) {
+    // Implementation would depend on your accessibility_scans table structure
+    console.log('Getting accessibility scans for user:', userId);
+    return [];
+  }
+
+  // Subscription methods
+  async createSubscription(subscription: any) {
+    console.log('Creating subscription:', subscription);
+    return subscription;
+  }
+
+  async updateSubscriptionPayment(subscriptionId: string, paid: boolean) {
+    console.log('Updating subscription payment:', subscriptionId, paid);
+  }
+
+  async updateSubscriptionStatus(subscriptionId: string, status: string) {
+    console.log('Updating subscription status:', subscriptionId, status);
+  }
+
+  // Webhook methods
+  async createWebhook(webhook: any) {
+    console.log('Creating webhook:', webhook);
+    return webhook;
+  }
+
+  async getWebhooks(userId: string) {
+    console.log('Getting webhooks for user:', userId);
+    return [];
+  }
+
+  async getActiveWebhooks(userId: string, eventType: string) {
+    console.log('Getting active webhooks:', userId, eventType);
+    return [];
+  }
+
+  async deleteWebhook(webhookId: string, userId: string) {
+    console.log('Deleting webhook:', webhookId, userId);
+  }
+
+  async logWebhookDelivery(delivery: any) {
+    console.log('Logging webhook delivery:', delivery);
+  }
+
+  // Audit methods
+  async createAuditEvent(event: any) {
+    console.log('Creating audit event:', event);
+  }
+
+  async getAuditEvents(userId: string, filters?: any) {
+    console.log('Getting audit events:', userId, filters);
+    return [];
+  }
+
+  // Integration methods
+  async createIntegration(userId: string, integration: any) {
+    console.log('Creating integration:', userId, integration);
+  }
+
+  async getIntegration(integrationId: string) {
+    console.log('Getting integration:', integrationId);
+    return null;
+  }
+
+  async getIntegrations(userId: string) {
+    console.log('Getting integrations for user:', userId);
+    return [];
+  }
+
+  async updateIntegrationSync(integrationId: string, lastSync: Date) {
+    console.log('Updating integration sync:', integrationId, lastSync);
+  }
+
+  async updateIntegrationStatus(integrationId: string, status: string) {
+    console.log('Updating integration status:', integrationId, status);
+  }
+
+  async deleteIntegration(integrationId: string, userId: string) {
+    console.log('Deleting integration:', integrationId, userId);
   }
 
   // Dashboard statistics

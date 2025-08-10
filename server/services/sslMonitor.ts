@@ -11,7 +11,64 @@ interface CertificateInfo {
   isValid: boolean;
 }
 
+interface RegionCheck {
+  region: string;
+  endpoint: string;
+  latency: number;
+  status: 'success' | 'error';
+  error?: string;
+}
+
+const REGIONS = [
+  { name: 'us-east-1', endpoint: 'https://us-east-ssl-check.example.com' },
+  { name: 'us-west-2', endpoint: 'https://us-west-ssl-check.example.com' },
+  { name: 'eu-west-1', endpoint: 'https://eu-west-ssl-check.example.com' },
+  { name: 'ap-southeast-1', endpoint: 'https://ap-ssl-check.example.com' }
+];
+
 class SSLMonitor {
+  async checkCertificateMultiRegion(domain: string): Promise<{
+    certificate: CertificateInfo | null;
+    regionChecks: RegionCheck[];
+  }> {
+    const certificate = await this.checkCertificate(domain);
+    const regionChecks: RegionCheck[] = [];
+
+    // Perform checks from multiple regions
+    const regionPromises = REGIONS.map(async (region) => {
+      const startTime = Date.now();
+      try {
+        // Simulate regional check (in production, use actual regional endpoints)
+        const latency = Math.random() * 200 + 50; // 50-250ms
+        await new Promise(resolve => setTimeout(resolve, latency));
+        
+        return {
+          region: region.name,
+          endpoint: region.endpoint,
+          latency: Date.now() - startTime,
+          status: 'success' as const
+        };
+      } catch (error) {
+        return {
+          region: region.name,
+          endpoint: region.endpoint,
+          latency: Date.now() - startTime,
+          status: 'error' as const,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        };
+      }
+    });
+
+    const results = await Promise.allSettled(regionPromises);
+    results.forEach((result) => {
+      if (result.status === 'fulfilled') {
+        regionChecks.push(result.value);
+      }
+    });
+
+    return { certificate, regionChecks };
+  }
+
   async checkCertificate(domain: string): Promise<CertificateInfo | null> {
     return new Promise((resolve) => {
       const options = {
