@@ -197,14 +197,14 @@ export default function DataInventory() {
     }
   };
 
-  const filteredDataTypes = dataTypes?.filter((item: any) => {
+  const filteredDataTypes = Array.isArray(dataTypes) ? dataTypes.filter((item: any) => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = !categoryFilter || item.category === categoryFilter;
     return matchesSearch && matchesCategory;
-  }) || [];
+  }) : [];
 
-  const categories = [...new Set(dataTypes?.map((item: any) => item.category) || [])];
+  const categories = Array.isArray(dataTypes) ? [...new Set(dataTypes.map((item: any) => item.category))] : [];
 
   if (dataTypesLoading) {
     return (
@@ -296,6 +296,7 @@ export default function DataInventory() {
                         <Textarea 
                           placeholder="Describe what this data type includes..."
                           {...field}
+                          value={field.value || ""}
                         />
                       </FormControl>
                       <FormMessage />
@@ -340,7 +341,7 @@ export default function DataInventory() {
                       <FormItem>
                         <FormLabel>Retention Period</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., 2 years" {...field} />
+                          <Input placeholder="e.g., 2 years" {...field} value={field.value || ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -352,7 +353,7 @@ export default function DataInventory() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Legal Basis (GDPR)</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value || ""}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select legal basis" />

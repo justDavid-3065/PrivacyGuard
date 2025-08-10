@@ -106,12 +106,12 @@ export default function ConsentTracker() {
     createConsentMutation.mutate(data);
   };
 
-  const filteredRecords = consentRecords?.filter((record: any) => {
+  const filteredRecords = Array.isArray(consentRecords) ? consentRecords.filter((record: any) => {
     const matchesSearch = record.subjectEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          record.subjectName?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = !statusFilter || record.status === statusFilter;
     return matchesSearch && matchesStatus;
-  }) || [];
+  }) : [];
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -200,7 +200,7 @@ export default function ConsentTracker() {
                       <FormItem>
                         <FormLabel>Subject Name (Optional)</FormLabel>
                         <FormControl>
-                          <Input placeholder="John Doe" {...field} />
+                          <Input placeholder="John Doe" {...field} value={field.value || ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -215,7 +215,7 @@ export default function ConsentTracker() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Consent Type</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value || ""}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select consent type" />
@@ -239,7 +239,7 @@ export default function ConsentTracker() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Status</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value || ""}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select status" />
@@ -265,7 +265,7 @@ export default function ConsentTracker() {
                       <FormItem>
                         <FormLabel>Policy Version</FormLabel>
                         <FormControl>
-                          <Input placeholder="v1.0" {...field} />
+                          <Input placeholder="v1.0" {...field} value={field.value || ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -277,7 +277,7 @@ export default function ConsentTracker() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Method</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value || ""}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select method" />
@@ -304,7 +304,7 @@ export default function ConsentTracker() {
                       <FormItem>
                         <FormLabel>IP Address (Optional)</FormLabel>
                         <FormControl>
-                          <Input placeholder="192.168.1.1" {...field} />
+                          <Input placeholder="192.168.1.1" {...field} value={field.value || ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -317,7 +317,7 @@ export default function ConsentTracker() {
                       <FormItem>
                         <FormLabel>User Agent (Optional)</FormLabel>
                         <FormControl>
-                          <Input placeholder="Browser user agent" {...field} />
+                          <Input placeholder="Browser user agent" {...field} value={field.value || ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

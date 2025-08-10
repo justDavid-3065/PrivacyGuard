@@ -20,7 +20,7 @@ export class EmailService {
     };
 
     if (emailConfig.auth.user && emailConfig.auth.pass) {
-      this.transporter = nodemailer.createTransporter(emailConfig);
+      this.transporter = nodemailer.createTransport(emailConfig);
     } else {
       console.log('Email service not configured - SMTP credentials missing');
     }

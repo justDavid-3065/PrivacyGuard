@@ -1,56 +1,95 @@
 import { useAuth } from "@/hooks/useAuth";
-import { Bell, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Bell, LogOut, Settings, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import type { User as UserType } from "@shared/schema";
 
-export default function TopNavigation() {
-  const { user } = useAuth();
+export function TopNavigation() {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <header className="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-6">
+        <div className="animate-pulse h-8 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
+        <div className="animate-pulse h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+      </header>
+    );
+  }
+
+  const typedUser = user as UserType;
+  const displayName = typedUser?.firstName && typedUser?.lastName 
+    ? `${typedUser.firstName} ${typedUser.lastName}` 
+    : typedUser?.firstName || typedUser?.email || 'User';
+  const initials = typedUser?.firstName && typedUser?.lastName
+    ? `${typedUser.firstName[0]}${typedUser.lastName[0]}`
+    : typedUser?.email?.[0]?.toUpperCase() || 'U';
 
   return (
-    <header className="bg-card border-b border-border px-6 py-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <h2 className="text-2xl font-semibold text-foreground">Compliance Dashboard</h2>
-          <div className="flex items-center space-x-2">
-            <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-              GDPR Compliant
-            </Badge>
-            <Badge variant="secondary" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-              CCPA Ready
-            </Badge>
-          </div>
-        </div>
-        
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 bg-destructive text-destructive-foreground flex items-center justify-center text-xs">
-              3
-            </Badge>
-          </Button>
-          
-          <div className="flex items-center space-x-3">
-            <div className="text-right">
-              <p className="text-sm font-medium text-foreground">
-                {user?.firstName && user?.lastName 
-                  ? `${user.firstName} ${user.lastName}` 
-                  : user?.email || 'User'}
-              </p>
-              <p className="text-xs text-muted-foreground capitalize">{user?.role || 'Viewer'}</p>
-            </div>
-            <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
-              <User className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => window.location.href = '/api/logout'}
-              className="text-xs"
-            >
-              Logout
+    <header className="h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-6">
+      <div className="flex items-center space-x-4">
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+          Privacy Compliance Dashboard
+        </h1>
+      </div>
+
+      <div className="flex items-center space-x-4">
+        {/* Notifications */}
+        <Button variant="ghost" size="sm" className="relative">
+          <Bell className="h-5 w-5" />
+          <Badge 
+            variant="destructive" 
+            className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+          >
+            3
+          </Badge>
+        </Button>
+
+        {/* User Menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={typedUser?.profileImageUrl || undefined} alt={displayName} />
+                <AvatarFallback>{initials}</AvatarFallback>
+              </Avatar>
             </Button>
-          </div>
-        </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56" align="end" forceMount>
+            <DropdownMenuLabel className="font-normal">
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">{displayName}</p>
+                <p className="text-xs leading-none text-muted-foreground">
+                  {typedUser?.email}
+                </p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <User className="mr-2 h-4 w-4" />
+              <span>Profile</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Settings</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <a href="/api/logout" className="flex items-center">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </a>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );

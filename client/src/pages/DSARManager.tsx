@@ -162,12 +162,12 @@ export default function DSARManager() {
     updateDsarMutation.mutate({ id: requestId, data: updateData });
   };
 
-  const filteredRequests = dsarRequests?.filter((request: any) => {
+  const filteredRequests = Array.isArray(dsarRequests) ? dsarRequests.filter((request: any) => {
     const matchesSearch = request.subjectEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          request.subjectName?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = !statusFilter || request.status === statusFilter;
     return matchesSearch && matchesStatus;
-  }) || [];
+  }) : [];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -251,7 +251,7 @@ export default function DSARManager() {
                       <FormItem>
                         <FormLabel>Subject Name (Optional)</FormLabel>
                         <FormControl>
-                          <Input placeholder="John Doe" {...field} />
+                          <Input placeholder="John Doe" {...field} value={field.value || ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -295,6 +295,7 @@ export default function DSARManager() {
                         <Textarea 
                           placeholder="Describe the request details..."
                           {...field}
+                          value={field.value || ""}
                         />
                       </FormControl>
                       <FormMessage />
@@ -312,6 +313,7 @@ export default function DSARManager() {
                         <Textarea 
                           placeholder="Internal notes for processing..."
                           {...field}
+                          value={field.value || ""}
                         />
                       </FormControl>
                       <FormMessage />

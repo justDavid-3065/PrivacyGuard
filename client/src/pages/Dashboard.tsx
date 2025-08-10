@@ -90,8 +90,8 @@ export default function Dashboard() {
     );
   }
 
-  const recentDsarRequests = dsarRequests?.slice(0, 3) || [];
-  const domainsWithCerts = domains?.slice(0, 3) || [];
+  const recentDsarRequests = Array.isArray(dsarRequests) ? dsarRequests.slice(0, 3) : [];
+  const domainsWithCerts = Array.isArray(domains) ? domains.slice(0, 3) : [];
 
   return (
     <div className="space-y-8">
@@ -102,7 +102,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Compliance Score</p>
-                <p className="text-3xl font-bold text-secondary">{stats.complianceScore}%</p>
+                <p className="text-3xl font-bold text-secondary">{stats?.complianceScore || 0}%</p>
                 <p className="text-xs text-green-600 mt-1 flex items-center">
                   <TrendingUp className="w-3 h-3 mr-1" />
                   Good standing
@@ -120,7 +120,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Open DSARs</p>
-                <p className="text-3xl font-bold text-foreground">{stats.openDsars}</p>
+                <p className="text-3xl font-bold text-foreground">{stats?.openDsars || 0}</p>
                 <p className="text-xs text-muted-foreground mt-1 flex items-center">
                   <Clock className="w-3 h-3 mr-1" />
                   Needs attention
@@ -138,10 +138,10 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">SSL Certificates</p>
-                <p className="text-3xl font-bold text-foreground">{stats.totalDomains}</p>
+                <p className="text-3xl font-bold text-foreground">{stats?.totalDomains || 0}</p>
                 <p className="text-xs text-orange-600 mt-1 flex items-center">
                   <AlertTriangle className="w-3 h-3 mr-1" />
-                  {stats.expiringCerts} expiring soon
+                  {stats?.expiringCerts || 0} expiring soon
                 </p>
               </div>
               <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
@@ -156,7 +156,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Data Types</p>
-                <p className="text-3xl font-bold text-foreground">{stats.totalDataTypes}</p>
+                <p className="text-3xl font-bold text-foreground">{stats?.totalDataTypes || 0}</p>
                 <p className="text-xs text-blue-600 mt-1 flex items-center">
                   <Database className="w-3 h-3 mr-1" />
                   Inventory managed
