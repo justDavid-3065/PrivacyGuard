@@ -135,8 +135,8 @@ export const useOfflineSync = () => {
   };
 
   const getAuthToken = async () => {
-    // Get auth token from storage
-    return 'mock-token';
+    const { authTokenManager } = await import('../services/authTokenManager');
+    return await authTokenManager.getValidToken();
   };
 
   const clearPendingActions = async () => {

@@ -34,9 +34,8 @@ class ApiService {
   }
 
   private async getAuthToken(): Promise<string | null> {
-    // Implementation depends on your auth system
-    // This could be AsyncStorage, Keychain, etc.
-    return 'mock-token';
+    const { authTokenManager } = await import('./authTokenManager');
+    return await authTokenManager.getValidToken();
   }
 
   // Authentication
