@@ -78,46 +78,23 @@ function InstallationChecker({ children }: { children: React.ReactNode }) {
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
 
+  // Wait for auth check to complete before redirecting
   if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  return isAuthenticated ? children : <Navigate to="/" />;
-}
-
-function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading || !isAuthenticated) {
     return (
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/install" element={<InstallWizard />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p>Checking authentication...</p>
+        </div>
+      </div>
     );
   }
 
-  return (
-    <Layout>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/data-inventory" element={<DataInventory />} />
-        <Route path="/consent-tracker" element={<ConsentTracker />} />
-        <Route path="/dsar-manager" element={<DSARManager />} />
-        <Route path="/privacy-notices" element={<PrivacyNotices />} />
-        <Route path="/incident-logbook" element={<IncidentLogbook />} />
-        <Route path="/ssl-certificates" element={<SSLCertificates />} />
-        <Route path="/domain-monitor" element={<DomainMonitor />} />
-        <Route path="/alert-settings" element={<AlertSettings />} />
-        <Route path="/team-management" element={<TeamManagement />} />
-        <Route path="/reports" element={<Reports />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    </Layout>
-  );
+  // Only redirect after loading is complete AND user is not authenticated
+  return isAuthenticated ? children : <Navigate to="/" replace />;
 }
+
+
 
 function App() {
   return (
