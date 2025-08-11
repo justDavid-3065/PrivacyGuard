@@ -19,6 +19,7 @@ import TeamManagement from "@/pages/TeamManagement";
 import Reports from "@/pages/Reports";
 import Settings from "@/pages/Settings";
 import Layout from "@/components/Layout";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -55,12 +56,50 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Router>
+            <AppContent />
+          </Router>
+          <Toaster />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
+  );
+}
+
+// Define AppContent to avoid issues with Router wrapping
+function AppContent() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading || !isAuthenticated) {
+    return (
+      <Switch>
+        <Route path="/" component={Landing} />
+        <Route component={NotFound} />
+      </Switch>
+    );
+  }
+
+  return (
+    <Layout>
+      <Switch>
+        <Route path="/" component={Dashboard} />
+        <Route path="/data-inventory" component={DataInventory} />
+        <Route path="/consent-tracker" component={ConsentTracker} />
+        <Route path="/dsar-manager" component={DSARManager} />
+        <Route path="/privacy-notices" component={PrivacyNotices} />
+        <Route path="/incident-logbook" component={IncidentLogbook} />
+        <Route path="/ssl-certificates" component={SSLCertificates} />
+        <Route path="/domain-monitor" component={DomainMonitor} />
+        <Route path="/alert-settings" component={AlertSettings} />
+        <Route path="/team-management" component={TeamManagement} />
+        <Route path="/reports" component={Reports} />
+        <Route path="/settings" component={Settings} />
+        <Route component={NotFound} />
+      </Switch>
+    </Layout>
   );
 }
 
