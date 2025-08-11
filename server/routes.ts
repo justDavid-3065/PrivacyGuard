@@ -19,10 +19,14 @@ import { privacyNoticeGenerator } from "./services/privacyNoticeGenerator";
 import { webhookService } from "./services/webhookService";
 import { auditService } from "./services/auditService";
 import { integrationService } from "./services/integrationService";
+import { registerInstallRoutes } from "./routes/install";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
+
+  // Install routes (must be before other routes)
+  registerInstallRoutes(app);
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
@@ -125,54 +129,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/data-types', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      let dataTypes = await storage.getDataTypes(userId);
-      
-      // If no data exists, return sample data to demonstrate categories
-      if (!dataTypes || dataTypes.length === 0) {
-        dataTypes = [
-          {
-            id: 'sample-1',
-            name: 'Email Addresses',
-            description: 'User email addresses for communication',
-            category: 'personal',
-            purpose: 'Marketing communications',
-            source: 'Website signup form',
-            retention: '2 years',
-            legalBasis: 'consent',
-            userId: userId,
-            createdAt: new Date(),
-            updatedAt: new Date()
-          },
-          {
-            id: 'sample-2',
-            name: 'Payment Information',
-            description: 'Credit card and billing data',
-            category: 'financial',
-            purpose: 'Payment processing',
-            source: 'Checkout process',
-            retention: '7 years',
-            legalBasis: 'contract',
-            userId: userId,
-            createdAt: new Date(),
-            updatedAt: new Date()
-          },
-          {
-            id: 'sample-3',
-            name: 'Biometric Data',
-            description: 'Fingerprint and facial recognition data',
-            category: 'sensitive',
-            purpose: 'Security authentication',
-            source: 'Mobile app',
-            retention: '1 year',
-            legalBasis: 'consent',
-            userId: userId,
-            createdAt: new Date(),
-            updatedAt: new Date()
-          }
-        ];
-      }
-      
-      res.json(dataTypes);
+      const dataTypes = await storage.getDataTypes(userId);
+      res.json(dataTypes || []);
     } catch (error) {
       console.error("Error fetching data types:", error);
       res.status(500).json({ message: "Failed to fetch data types" });
@@ -218,51 +176,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/consent-records', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      let records = await storage.getConsentRecords(userId);
-      
-      // If no data exists, return sample data to demonstrate statuses
-      if (!records || records.length === 0) {
-        records = [
-          {
-            id: 'consent-1',
-            subjectEmail: 'john.doe@example.com',
-            subjectName: 'John Doe',
-            consentType: 'marketing',
-            status: 'granted',
-            timestamp: new Date(Date.now() - 86400000),
-            policyVersion: 'v1.0',
-            method: 'website',
-            userId: userId,
-            createdAt: new Date()
-          },
-          {
-            id: 'consent-2',
-            subjectEmail: 'jane.smith@example.com',
-            subjectName: 'Jane Smith',
-            consentType: 'analytics',
-            status: 'withdrawn',
-            timestamp: new Date(Date.now() - 172800000),
-            policyVersion: 'v1.1',
-            method: 'email',
-            userId: userId,
-            createdAt: new Date()
-          },
-          {
-            id: 'consent-3',
-            subjectEmail: 'bob.wilson@example.com',
-            subjectName: 'Bob Wilson',
-            consentType: 'necessary',
-            status: 'pending',
-            timestamp: new Date(Date.now() - 3600000),
-            policyVersion: 'v1.2',
-            method: 'api',
-            userId: userId,
-            createdAt: new Date()
-          }
-        ];
-      }
-      
-      res.json(records);
+      const records = await storage.getConsentRecords(userId);
+      res.json(records || []);
     } catch (error) {
       console.error("Error fetching consent records:", error);
       res.status(500).json({ message: "Failed to fetch consent records" });

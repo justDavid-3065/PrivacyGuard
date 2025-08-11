@@ -27,6 +27,19 @@ const dataTypeFormSchema = insertDataTypeSchema.extend({
 
 type DataTypeFormData = z.infer<typeof dataTypeFormSchema>;
 
+// Define a placeholder type for DataType if not globally available or imported
+// In a real scenario, this would be properly defined or imported
+interface DataType {
+  id: string;
+  name: string;
+  description?: string;
+  category: string;
+  purpose: string;
+  source: string;
+  retention?: string;
+  legalBasis?: string;
+}
+
 export default function DataInventory() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
@@ -34,6 +47,27 @@ export default function DataInventory() {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
+  const [referenceCategories, setReferenceCategories] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchReferenceData = async () => {
+      try {
+        const response = await fetch('/api/install/reference-data?type=categories');
+        const categories = await response.json();
+        setReferenceCategories(categories.map((cat: any) => cat.name));
+      } catch (error) {
+        console.error('Failed to fetch reference categories:', error);
+      }
+    };
+    fetchReferenceData();
+  }, []);
+
+  const getUniqueCategories = (dataTypes: DataType[]) => {
+    const actualCategories = dataTypes.map(dt => dt.category).filter(Boolean);
+    const uniqueActual = Array.from(new Set(actualCategories));
+    // Combine actual categories with reference categories
+    return Array.from(new Set([...referenceCategories, ...uniqueActual]));
+  };
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -204,10 +238,8 @@ export default function DataInventory() {
     return matchesSearch && matchesCategory;
   }) : [];
 
-  // Schema-based categories with fallback when API returns empty data
-  const categories = Array.isArray(dataTypes) && dataTypes.length > 0 
-    ? [...new Set(dataTypes.map((item: any) => item.category))]
-    : ['personal', 'sensitive', 'financial', 'behavioral', 'technical'];
+  // Use combined categories from reference data and actual data types
+  const categories = dataTypes ? getUniqueCategories(dataTypes) : referenceCategories;
 
   if (dataTypesLoading) {
     return (
@@ -280,11 +312,11 @@ export default function DataInventory() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="personal">Personal Data</SelectItem>
-                            <SelectItem value="sensitive">Sensitive Data</SelectItem>
-                            <SelectItem value="financial">Financial Data</SelectItem>
-                            <SelectItem value="behavioral">Behavioral Data</SelectItem>
-                            <SelectItem value="technical">Technical Data</SelectItem>
+                            {categories.map((category) => (
+                              <SelectItem key={category} value={category}>
+                                {category.charAt(0).toUpperCase() + category.slice(1).replace('_', ' ')}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -421,7 +453,7 @@ export default function DataInventory() {
                   <SelectItem value="all">All Categories</SelectItem>
                   {categories.map((category) => (
                     <SelectItem key={category} value={category}>
-                      {category.charAt(0).toUpperCase() + category.slice(1)}
+                      {category.charAt(0).toUpperCase() + category.slice(1).replace('_', ' ')}
                     </SelectItem>
                   ))}
                 </SelectContent>
