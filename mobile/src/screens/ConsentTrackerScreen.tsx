@@ -75,6 +75,11 @@ const ConsentTrackerScreen = ({ navigation }: any) => {
     return 'mock-token';
   };
 
+  // Schema-based statuses with fallback when API returns empty data
+  const availableStatuses = consents && consents.length > 0 
+    ? [...new Set(consents.map((consent: any) => consent.status))]
+    : ['granted', 'withdrawn', 'pending'];
+
   const filteredConsents = consents?.filter((consent: any) =>
     consent.subjectEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
     consent.purpose.toLowerCase().includes(searchQuery.toLowerCase())

@@ -184,13 +184,13 @@ export default function IncidentLogbook() {
     updateIncidentMutation.mutate({ id: incidentId, data: updateData });
   };
 
-  const filteredIncidents = incidents?.filter((incident: any) => {
+  const filteredIncidents = Array.isArray(incidents) ? incidents.filter((incident: any) => {
     const matchesSearch = incident.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          incident.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSeverity = !severityFilter || incident.severity === severityFilter;
-    const matchesStatus = !statusFilter || incident.status === statusFilter;
+    const matchesSeverity = severityFilter === "all" || !severityFilter || incident.severity === severityFilter;
+    const matchesStatus = statusFilter === "all" || !statusFilter || incident.status === statusFilter;
     return matchesSearch && matchesSeverity && matchesStatus;
-  }) || [];
+  }) : [];
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -510,12 +510,12 @@ export default function IncidentLogbook() {
             </div>
             <div className="flex gap-2">
               <Select value={severityFilter} onValueChange={setSeverityFilter}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-48">
                   <Filter className="w-4 h-4 mr-2" />
-                  <SelectValue placeholder="Severity" />
+                  <SelectValue placeholder="Filter by severity" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Severities</SelectItem>
+                  <SelectItem value="all">All Severities</SelectItem>
                   <SelectItem value="low">Low</SelectItem>
                   <SelectItem value="medium">Medium</SelectItem>
                   <SelectItem value="high">High</SelectItem>
@@ -523,11 +523,11 @@ export default function IncidentLogbook() {
                 </SelectContent>
               </Select>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Status" />
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Statuses</SelectItem>
+                  <SelectItem value="all">All Statuses</SelectItem>
                   <SelectItem value="open">Open</SelectItem>
                   <SelectItem value="investigating">Investigating</SelectItem>
                   <SelectItem value="resolved">Resolved</SelectItem>
@@ -649,7 +649,7 @@ export default function IncidentLogbook() {
                   {previewIncident.status}
                 </Badge>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="font-medium mb-1">Discovered</p>

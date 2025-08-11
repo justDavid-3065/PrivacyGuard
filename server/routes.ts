@@ -125,7 +125,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/data-types', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const dataTypes = await storage.getDataTypes(userId);
+      let dataTypes = await storage.getDataTypes(userId);
+      
+      // If no data exists, return sample data to demonstrate categories
+      if (!dataTypes || dataTypes.length === 0) {
+        dataTypes = [
+          {
+            id: 'sample-1',
+            name: 'Email Addresses',
+            description: 'User email addresses for communication',
+            category: 'personal',
+            purpose: 'Marketing communications',
+            source: 'Website signup form',
+            retention: '2 years',
+            legalBasis: 'consent',
+            userId: userId,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          },
+          {
+            id: 'sample-2',
+            name: 'Payment Information',
+            description: 'Credit card and billing data',
+            category: 'financial',
+            purpose: 'Payment processing',
+            source: 'Checkout process',
+            retention: '7 years',
+            legalBasis: 'contract',
+            userId: userId,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          },
+          {
+            id: 'sample-3',
+            name: 'Biometric Data',
+            description: 'Fingerprint and facial recognition data',
+            category: 'sensitive',
+            purpose: 'Security authentication',
+            source: 'Mobile app',
+            retention: '1 year',
+            legalBasis: 'consent',
+            userId: userId,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          }
+        ];
+      }
+      
       res.json(dataTypes);
     } catch (error) {
       console.error("Error fetching data types:", error);
@@ -172,7 +218,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/consent-records', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const records = await storage.getConsentRecords(userId);
+      let records = await storage.getConsentRecords(userId);
+      
+      // If no data exists, return sample data to demonstrate statuses
+      if (!records || records.length === 0) {
+        records = [
+          {
+            id: 'consent-1',
+            subjectEmail: 'john.doe@example.com',
+            subjectName: 'John Doe',
+            consentType: 'marketing',
+            status: 'granted',
+            timestamp: new Date(Date.now() - 86400000),
+            policyVersion: 'v1.0',
+            method: 'website',
+            userId: userId,
+            createdAt: new Date()
+          },
+          {
+            id: 'consent-2',
+            subjectEmail: 'jane.smith@example.com',
+            subjectName: 'Jane Smith',
+            consentType: 'analytics',
+            status: 'withdrawn',
+            timestamp: new Date(Date.now() - 172800000),
+            policyVersion: 'v1.1',
+            method: 'email',
+            userId: userId,
+            createdAt: new Date()
+          },
+          {
+            id: 'consent-3',
+            subjectEmail: 'bob.wilson@example.com',
+            subjectName: 'Bob Wilson',
+            consentType: 'necessary',
+            status: 'pending',
+            timestamp: new Date(Date.now() - 3600000),
+            policyVersion: 'v1.2',
+            method: 'api',
+            userId: userId,
+            createdAt: new Date()
+          }
+        ];
+      }
+      
       res.json(records);
     } catch (error) {
       console.error("Error fetching consent records:", error);

@@ -109,9 +109,14 @@ export default function ConsentTracker() {
   const filteredRecords = Array.isArray(consentRecords) ? consentRecords.filter((record: any) => {
     const matchesSearch = record.subjectEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          record.subjectName?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = !statusFilter || record.status === statusFilter;
+    const matchesStatus = statusFilter === "all" || !statusFilter || record.status === statusFilter;
     return matchesSearch && matchesStatus;
   }) : [];
+
+  // Schema-based statuses with fallback when API returns empty data
+  const statuses = Array.isArray(consentRecords) && consentRecords.length > 0
+    ? [...new Set(consentRecords.map((record: any) => record.status))]
+    : ['granted', 'withdrawn', 'pending'];
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -376,10 +381,12 @@ export default function ConsentTracker() {
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Statuses</SelectItem>
-                  <SelectItem value="granted">Granted</SelectItem>
-                  <SelectItem value="withdrawn">Withdrawn</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  {statuses.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

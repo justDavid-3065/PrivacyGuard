@@ -87,6 +87,11 @@ const DataInventoryScreen = ({ navigation }: any) => {
     });
   };
 
+  // Schema-based categories with fallback when API returns empty data
+  const availableCategories = dataTypes && dataTypes.length > 0 
+    ? [...new Set(dataTypes.map((dt: any) => dt.category))]
+    : ['personal', 'sensitive', 'financial', 'behavioral', 'technical'];
+
   const filteredDataTypes = dataTypes?.filter((dt: any) => {
     const matchesSearch = dt.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          dt.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -177,11 +182,13 @@ const DataInventoryScreen = ({ navigation }: any) => {
             }
           >
             <Menu.Item onPress={() => { setSelectedCategory('all'); setFilterVisible(false); }} title="All Categories" />
-            <Menu.Item onPress={() => { setSelectedCategory('personal'); setFilterVisible(false); }} title="Personal" />
-            <Menu.Item onPress={() => { setSelectedCategory('sensitive'); setFilterVisible(false); }} title="Sensitive" />
-            <Menu.Item onPress={() => { setSelectedCategory('financial'); setFilterVisible(false); }} title="Financial" />
-            <Menu.Item onPress={() => { setSelectedCategory('health'); setFilterVisible(false); }} title="Health" />
-            <Menu.Item onPress={() => { setSelectedCategory('behavioral'); setFilterVisible(false); }} title="Behavioral" />
+            {availableCategories.map((category) => (
+              <Menu.Item 
+                key={category}
+                onPress={() => { setSelectedCategory(category); setFilterVisible(false); }} 
+                title={category.charAt(0).toUpperCase() + category.slice(1)} 
+              />
+            ))}
           </Menu>
         </View>
 

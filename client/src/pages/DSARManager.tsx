@@ -164,8 +164,9 @@ export default function DSARManager() {
 
   const filteredRequests = Array.isArray(dsarRequests) ? dsarRequests.filter((request: any) => {
     const matchesSearch = request.subjectEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         request.subjectName?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = !statusFilter || request.status === statusFilter;
+                         request.subjectName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         request.requestType.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "all" || !statusFilter || request.status === statusFilter;
     return matchesSearch && matchesStatus;
   }) : [];
 
@@ -385,7 +386,7 @@ export default function DSARManager() {
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Statuses</SelectItem>
+                  <SelectItem value="all">All Statuses</SelectItem>
                   <SelectItem value="submitted">Submitted</SelectItem>
                   <SelectItem value="in_progress">In Progress</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
@@ -419,7 +420,7 @@ export default function DSARManager() {
           {filteredRequests.map((request: any) => {
             const daysUntilDue = getDaysUntilDue(request.dueDate);
             const isOverdue = daysUntilDue < 0 && request.status !== 'completed';
-            
+
             return (
               <Card key={request.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-6">

@@ -204,12 +204,12 @@ export default function PrivacyNotices() {
     setPreviewDialogOpen(true);
   };
 
-  const filteredNotices = privacyNotices?.filter((notice: any) => {
+  const filteredNotices = Array.isArray(privacyNotices) ? privacyNotices.filter((notice: any) => {
     const matchesSearch = notice.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         notice.content.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRegulation = !regulationFilter || notice.regulation === regulationFilter;
+                         notice.regulation.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRegulation = regulationFilter === "all" || !regulationFilter || notice.regulation === regulationFilter;
     return matchesSearch && matchesRegulation;
-  }) || [];
+  }) : [];
 
   const regulations = [...new Set(privacyNotices?.map((notice: any) => notice.regulation) || [])];
 
@@ -414,12 +414,12 @@ export default function PrivacyNotices() {
                   <SelectValue placeholder="Filter by regulation" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Regulations</SelectItem>
-                  {regulations.map((regulation) => (
-                    <SelectItem key={regulation} value={regulation}>
-                      {regulation}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="all">All Regulations</SelectItem>
+                  <SelectItem value="GDPR">GDPR</SelectItem>
+                  <SelectItem value="CCPA">CCPA</SelectItem>
+                  <SelectItem value="UK_DPA">UK DPA</SelectItem>
+                  <SelectItem value="PIPEDA">PIPEDA</SelectItem>
+                  <SelectItem value="LGPD">LGPD</SelectItem>
                 </SelectContent>
               </Select>
             </div>

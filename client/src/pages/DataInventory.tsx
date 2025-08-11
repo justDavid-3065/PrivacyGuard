@@ -200,11 +200,14 @@ export default function DataInventory() {
   const filteredDataTypes = Array.isArray(dataTypes) ? dataTypes.filter((item: any) => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !categoryFilter || item.category === categoryFilter;
+    const matchesCategory = categoryFilter === "all" || !categoryFilter || item.category === categoryFilter;
     return matchesSearch && matchesCategory;
   }) : [];
 
-  const categories = Array.isArray(dataTypes) ? [...new Set(dataTypes.map((item: any) => item.category))] : [];
+  // Schema-based categories with fallback when API returns empty data
+  const categories = Array.isArray(dataTypes) && dataTypes.length > 0 
+    ? [...new Set(dataTypes.map((item: any) => item.category))]
+    : ['personal', 'sensitive', 'financial', 'behavioral', 'technical'];
 
   if (dataTypesLoading) {
     return (
@@ -415,7 +418,7 @@ export default function DataInventory() {
                   <SelectValue placeholder="Filter by category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Categories</SelectItem>
+                  <SelectItem value="all">All Categories</SelectItem>
                   {categories.map((category) => (
                     <SelectItem key={category} value={category}>
                       {category.charAt(0).toUpperCase() + category.slice(1)}
