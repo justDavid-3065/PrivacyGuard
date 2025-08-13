@@ -306,13 +306,43 @@ npm run test:coverage     # Run tests with coverage report
 ## Deployment
 
 ### Environment Variables
+
+**CRITICAL:** The following environment variables must be configured in Replit Secrets before deployment:
+
+#### Required for Core Functionality
 ```
-DATABASE_URL=postgresql://user:password@host:port/database
-STRIPE_SECRET_KEY=sk_test_...
-REPLIT_DB_URL=https://kv.replit.com/v0/...
-NODE_ENV=production
+DATABASE_URL=postgresql://username:password@host:port/database_name
+REPLIT_DOMAINS=your-replit-domain.replit.app
+REPL_ID=your-repl-id-here
+SESSION_SECRET=your-32-character-random-session-secret
+STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key_here
+```
+
+#### Required for Email Services
+```
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password-here
+SMTP_FROM=noreply@privacyguard.com
+```
+
+#### Application Configuration
+```
 PORT=5000
+NODE_ENV=production
+APP_URL=https://your-app-domain.com
 ```
+
+#### Optional Advanced Features
+```
+OPENAI_API_KEY=your-openai-api-key-for-ai-features
+HUBSPOT_API_KEY=your-hubspot-api-key-for-integration
+SLACK_WEBHOOK_URL=your-slack-webhook-url-for-notifications
+```
+
+**Installation Note:** Use the `ask_secrets` tool during import to request these values from the user, as the codebase requires them to be present for proper operation.
 
 ### Production Setup
 1. Configure environment variables
